@@ -32,11 +32,16 @@ MODEL = "qwen3:0.6b"
 
 class ProductData(BaseModel):
     """Date extrase despre produs."""
-    titlu: str = Field(description="Numele produsului")
-    descriere: str = Field(description="Descriere scurtă")
-    specificatii: str = Field(description="Specificații tehnice cheie")
-    preț: str = Field(default="")
-    extras_din: str = Field(description="'scraping' sau 'text'")
+    titlu: str = Field(description="Numele complet al produsului (ex. 'Apple MacBook Neo 13').")
+    descriere: str = Field(description="O descriere scurtă a produsului, evidențiind caracteristicile principale.")
+    specificatii: str = Field(description="Lista specificațiilor tehnice cheie ale produsului (ex. 'Procesor Intel i7, 16GB RAM, SSD 512GB').")
+    preț: str = Field(
+        default="",
+        description="Prețul produsului, exprimat ca text (ex. '4999 lei' sau '1200 EUR')."
+    )
+    extras_din: str = Field(
+        description="Sursa din care au fost extrase datele despre produs: 'scraping' (date preluate automat) sau 'text' (date introduse manual)."
+    )
 
 
 class FeatureComparison(BaseModel):
