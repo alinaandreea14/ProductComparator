@@ -3,18 +3,16 @@ Product Comparison Engine cu Instructor + OpenAI client pentru Ollama.
 Garantează output structurat validat Pydantic prin Instructor.
 """
 
-import hashlib
 import os
 from typing import List, Optional
 from dotenv import load_dotenv
 import instructor
-import openai
+from openai import OpenAI
 from diskcache import Cache
 from fastapi import FastAPI, HTTPException
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
-import html2text
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 load_dotenv()
 # =============================================================================
@@ -22,23 +20,10 @@ load_dotenv()
 # =============================================================================
 
 cache = Cache(directory=os.getenv("CACHE_DIR", "./cache"))
-
-# Client OpenAI configurat pentru Ollama
-# client = openai.OpenAI(
-#     base_url=f"{os.getenv('OLLAMA_HOST', 'http://localhost:11434')}/v1",
-#     api_key="ollama",  # Ollama ignoră, dar e necesar pentru client
-# )
-
-client = openai.OpenAI(
-    base_url="https://api.groq.com/openai/v1", #f"{os.getenv('OLLAMA_HOST', 'http://localhost:11434')}/v1",
-    api_key = os.getenv("GROQ_API_KEY"),  # Ollama ignoră, dar e necesar pentru client
-)
-
+client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 
 # Patch cu Instructor pentru structured outputs
 instructor_client = instructor.from_openai(client, mode=instructor.Mode.JSON)
-
-# MODEL = "llama-3.3-70b-versatile" #"qwen3:0.6b"
 MODEL = "qwen3:0.6b"
 
 # =============================================================================
