@@ -9,7 +9,7 @@ from diskcache import Cache
 from fastapi import FastAPI
 from models.pydantic_models import ComparisonResult, ComparisonRequest
 from services.scraper import scrape_product, parse_text_input
-from services.llm_service import compara_produse_instructor, client, MODEL
+from services.llm_service import compara_produse_instructor, comparison_with_cot_retry, client, MODEL
 
 load_dotenv()
 # =============================================================================
@@ -98,6 +98,23 @@ async def compare(request: ComparisonRequest):
     #cache.set(cache_key, result_dict, expire=3600*24)
     
     return result
+
+
+@app.post("/compare/cot", response_model=dict)
+async def compare_cot(request: ComparisonRequest):
+    if request.produs_a.este_url:
+        date_a = await scrape_product(request.produs_a.sursa)
+    else:
+        date_a = parse_text_input(request.produs_a.sursa)
+        
+    if request.produs_b.este_url:
+        date_b = await scrape_product(request.produs_b.sursa)
+    else:
+        date_b = parse_text_input(request.produs_b.sursa)
+
+    final_data = await comparison_with_cot_retry(date_a, date_b, request.preferinte)
+
+    return final_data
 
 
 @app.get("/health")

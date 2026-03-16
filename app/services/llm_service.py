@@ -2,6 +2,7 @@ import instructor
 from openai import OpenAI
 from fastapi import HTTPException
 from models.pydantic_models import ProductData, ComparisonResult
+from models.cot_models import CoTResponse, VerificationResult
 
 client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
 
@@ -59,3 +60,39 @@ async def compara_produse_instructor(
         
     except Exception as e:
         raise HTTPException(503, f"Instructor/LLM error: {str(e)}")
+    
+async def comparison_with_cot_retry(prod_a, prod_b, preferinte, max_retries=3):
+    feedback = ""
+    attempt = 0
+
+    while attempt < max_retries:
+        # Generator prompt cu feedback din încercările anterioare
+        generator_prompt = f"Compară {prod_a.titlu} vs {prod_b.titlu}. User: {preferinte}. {feedback}"
+
+        prediction = instructor_client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": generator_prompt}],
+            response_model=CoTResponse,
+        )
+
+        # Verificare
+        verifier_prompt = f"Evaluează logica: {prediction.gandire}. Concluzie: {prediction.raspuns}. Confidence: {prediction.confidence}"
+
+        verification = instructor_client.chat.completions.create(
+            model=MODEL,
+            response_model=VerificationResult,
+            messages=[
+                {"role": "system", "content": "Ești un critic logic strict. Verifică dacă argumentele susțin concluzia."},
+                {"role": "user", "content": verifier_prompt}
+            ]
+        )
+
+        if verification.valid and prediction.confidence > 0.7:
+            return {"result": prediction, "verification": verification, "attempts": attempt + 1}
+        
+        # 3. Feedback
+        feedback = f"\n\nREJECTED BY VERIFIER: {verification.motiv}. Please adjust your reasoning."
+        attempt += 1
+
+    raise HTTPException(status_code=422, detail="Nu s-a putut genera un răspuns valid după 3 încercări.")
+
