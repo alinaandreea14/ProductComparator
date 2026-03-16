@@ -90,7 +90,7 @@ async def comparison_with_cot_retry(prod_a, prod_b, preferinte, max_retries=3):
         if verification.valid and prediction.confidence > 0.7:
             return {"result": prediction, "verification": verification, "attempts": attempt + 1}
         
-        # 3. Feedback
+        # Feedback
         feedback = f"\n\nREJECTED BY VERIFIER: {verification.motiv}. Please adjust your reasoning."
         attempt += 1
 
