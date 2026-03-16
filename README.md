@@ -30,11 +30,11 @@ Această clasă reprezintă rezultatul final al comparației.
 
 ##  Chain-of-Thought cu Auto-Verificare
 
-#### 1.Generator:
+#### 1. `Generator`
 LLM-ul generează răspunsul în formatul specificat: GÂNDIRE: [pași] | RĂSPUNS: [concluzie] | SCOR DE ÎNCREDERE: [scor].
 
-#### 2.Verificator:
+#### 2 `Verificator`
 Același LLM este utilizat pentru a analiza răspunsul generat, verificând logica și validitatea acestuia. Răspunsul generat este trimis împreună cu un prompt care cere evaluarea acestuia.
 
-#### 3.Reîncercare:
+#### 3 `Reîncercare`
 Dacă verificatorul respinge răspunsul, generatorul primește feedback și încearcă din nou.
